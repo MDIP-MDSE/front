@@ -15,6 +15,8 @@ import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognitio
 var cloneDeep = require('lodash.clonedeep');
 var isEqual = require('lodash.isequal');
 
+const  {REACT_APP_DEV_MDIP_API_URL} = process.env
+
 function App() {
 
     const [coords, setCoords] = useState({x: 0, y: 0});
@@ -168,7 +170,7 @@ function App() {
             );
         }
 
-        const resp = await fetch("mmo/upload",
+        const resp = await fetch(REACT_APP_DEV_MDIP_API_URL + `mmo/upload`,
             {
                 body: formData,
                 method: "POST",
@@ -195,7 +197,7 @@ function App() {
         toast.dismiss();
         toast.loading("Searching for MMOs...");
 
-        const resp = await fetch("mmo/search",
+        const resp = await fetch(REACT_APP_DEV_MDIP_API_URL + `mmo/search`,
             {
                 body: JSON.stringify({
                     mmoType: 0,
@@ -238,7 +240,7 @@ function App() {
         toast.dismiss();
         toast.loading("Loading query data...");
 
-        const resp = await fetch("mmo/query/data",
+        const resp = await fetch(REACT_APP_DEV_MDIP_API_URL + `mmo/query/data`,
             {
                 method: "GET",
                 headers: {
@@ -291,57 +293,75 @@ function App() {
             callback: (context: string) => setMMO({
                 ...mmo,
                 context: context
-            })
+            }),
+            isFuzzyMatch: true,
+            fuzzyMatchingThreshold: 0.2
         },
         {
             command: 'Set the entity to *',
             callback: (entity: string) => setMMO({
                 ...mmo,
                 entity: entity
-            })
+            }),
+            isFuzzyMatch: true,
+            fuzzyMatchingThreshold: 0.2
         },
         {
             command: 'Set the location to *',
             callback: (location: string) => setMMO({
                 ...mmo,
                 location: location
-            })
+            }),
+            isFuzzyMatch: true,
+            fuzzyMatchingThreshold: 0.2
         },
         {
             command: 'Set the date to *',
             callback: (date: string) => setMMO({
                 ...mmo,
                 date: date
-            })
+            }),
+            isFuzzyMatch: true,
+            fuzzyMatchingThreshold: 0.2
         },
         {
             command: 'Set the object to *',
             callback: (object: string) => setMMO({
                 ...mmo,
                 object: object
-            })
+            }),
+            isFuzzyMatch: true,
+            fuzzyMatchingThreshold: 0.2
         },
         {
             command: 'Set the time to *',
             callback: (time: string) => setMMO({
                 ...mmo,
                 time: time
-            })
+            }),
+            isFuzzyMatch: true,
+            fuzzyMatchingThreshold: 0.2
         },
         {
             command: 'Set the event to *',
             callback: (event: string) => setMMO({
                 ...mmo,
                 event: event
-            })
+            }),
+            isFuzzyMatch: true,
+            fuzzyMatchingThreshold: 0.2
         },
         {
             command: 'I would like to order *',
-            callback: (food: string) => console.log("YOU HAVE ORDERED A FUCKING " + food)
+            callback: (food: string) => console.log("YOU HAVE ORDERED A FUCKING " + food),
+            isFuzzyMatch: true,
+            fuzzyMatchingThreshold: 0.2
         },
         {
             command: 'clear',
-            callback: () => setMMO(new MMODTO("", "", undefined, "", "", "", "", "", "", []))
+            callback: () => setMMO(new MMODTO("", "", undefined, "", "", "", "", "", "", [])),
+            isFuzzyMatch: true,
+            fuzzyMatchingThreshold: 0.2
         }
     ]
 
