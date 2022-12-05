@@ -1671,22 +1671,7 @@ function App() {
                                     <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Context {mmoQuery.context.value}</h5>
                                 </a>
                                 <p className="mb-3 font-normal text-gray-700 dark:text-gray-400">
-                                    Semantic Entity: {mmoQuery.semantic!.entity}
-                                </p>
-                                <p className="mb-3 font-normal text-gray-700 dark:text-gray-400">
-                                    Semantic Location: {mmoQuery.semantic!.location}
-                                </p>
-                                <p className="mb-3 font-normal text-gray-700 dark:text-gray-400">
-                                    Semantic Date: {mmoQuery.semantic!.date}
-                                </p>
-                                <p className="mb-3 font-normal text-gray-700 dark:text-gray-400">
-                                    Semantic Object: {mmoQuery.semantic!.object}
-                                </p>
-                                <p className="mb-3 font-normal text-gray-700 dark:text-gray-400">
-                                    Semantic Object: {mmoQuery.semantic!.time}
-                                </p>
-                                <p className="mb-3 font-normal text-gray-700 dark:text-gray-400">
-                                    Semantic Object: {mmoQuery.semantic!.event}
+                                    Semantic Entity: {mmoQuery.semantic != null ? (mmoQuery.semantic!.entity != null ? mmoQuery.semantic!.entity : 'Not Defined') : 'Not Defined'}
                                 </p>
                             </div>
                         </div>
