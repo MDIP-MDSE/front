@@ -1668,11 +1668,39 @@ function App() {
                             </a>
                             <div className="p-5">
                                 <a href="#">
-                                    <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Context {mmoQuery.context.value}</h5>
+                                    <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Context: {mmoQuery.context.value}</h5>
                                 </a>
                                 <p className="mb-3 font-normal text-gray-700 dark:text-gray-400">
                                     Semantic Entity: {mmoQuery.semantic != null ? (mmoQuery.semantic!.entity != null ? mmoQuery.semantic!.entity : 'Not Defined') : 'Not Defined'}
                                 </p>
+
+                                <p className="mb-3 font-normal text-gray-700 dark:text-gray-400">
+                                    Semantic Location: {mmoQuery.semantic != null ? (mmoQuery.semantic!.location != null ? mmoQuery.semantic!.location : 'Not Defined') : 'Not Defined'}
+                                </p>
+
+                                <p className="mb-3 font-normal text-gray-700 dark:text-gray-400">
+                                    Semantic Date: {mmoQuery.semantic != null ? (mmoQuery.semantic!.date != null ? mmoQuery.semantic!.date : 'Not Defined') : 'Not Defined'}
+                                </p>
+
+                                <p className="mb-3 font-normal text-gray-700 dark:text-gray-400">
+                                    Semantic Object: {mmoQuery.semantic != null ? (mmoQuery.semantic!.object != null ? mmoQuery.semantic!.object : 'Not Defined') : 'Not Defined'}
+                                </p>
+
+                                <p className="mb-3 font-normal text-gray-700 dark:text-gray-400">
+                                    Semantic Time: {mmoQuery.semantic != null ? (mmoQuery.semantic!.time != null ? mmoQuery.semantic!.time : 'Not Defined') : 'Not Defined'}
+                                </p>
+
+                                <p className="mb-3 font-normal text-gray-700 dark:text-gray-400">
+                                    Semantic Event: {mmoQuery.semantic != null ? (mmoQuery.semantic!.event != null ? mmoQuery.semantic!.event : 'Not Defined') : 'Not Defined'}
+                                </p>
+
+                                {mmoQuery.relationships != null &&
+                                    mmoQuery.relationships!.map((relationship: RelationshipDTO) => (
+                                        <p className="mb-3 font-normal text-gray-700 dark:text-gray-400">
+                                            Relationship: {relationship.relationshipType + " " + relationship.firsthandOperator + " " + relationship.operationType + " " + relationship.secondhandOperator}
+                                        </p>
+                                    ))
+                                }
                             </div>
                         </div>
                     ))
