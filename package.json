@@ -5,6 +5,7 @@
   "dependencies": {
     "@headlessui/react": "^1.7.4",
     "@heroicons/react": "^2.0.13",
+    "@speechly/speech-recognition-polyfill": "^1.3.0",
     "@studysync/react-image-annotation": "^1.0.8",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",

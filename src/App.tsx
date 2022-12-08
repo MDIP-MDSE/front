@@ -8,8 +8,8 @@ import { Combobox, Listbox, Transition  } from '@headlessui/react'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid'
 import toast, {Toaster} from "react-hot-toast";
 import {MMOQueryDTO} from "./dto/MMOQueryDTO";
-
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition'
+import createSpeechlySpeechRecognition from "@speechly/speech-recognition-polyfill/dist/createSpeechRecognition";
 
 
 var cloneDeep = require('lodash.clonedeep');
@@ -18,11 +18,6 @@ var isEqual = require('lodash.isequal');
 const  {REACT_APP_DEV_MDIP_API_URL} = process.env
 
 function App() {
-
-    const [coords, setCoords] = useState({x: 0, y: 0});
-    const [globalCoords, setGlobalCoords] = useState({x: 0, y: 0});
-
-    const [activePage, setActivePage] = useState<ActivePage>(ActivePage.HOME);
 
     const [mmo, setMMO] = useState<MMODTO>(
         new MMODTO("", "", undefined, "", "", "", "", "", "", []));
@@ -41,7 +36,6 @@ function App() {
 
     const [queryData, setQueryData] = useState<MMOQueryDTO[]>([]);
 
-    const hiddenFileInput = useRef(null);
 
     const [contextList, setContextList] = useState<string[]>([]);
     const [entityList, setEntityList] = useState<string[]>([]);
@@ -62,6 +56,8 @@ function App() {
                     .includes(query.toLowerCase().replace(/\s+/g, ''))
             )
     }
+
+    const hiddenFileInput = useRef(null);
 
     const handleClick = (event: any) => {
         if(hiddenFileInput != null) {
@@ -94,28 +90,7 @@ function App() {
         })
     };
 
-    useEffect(() => {
-        const handleWindowMouseMove = (event: any) => {
-            setGlobalCoords({
-                x: event.screenX,
-                y: event.screenY,
-            });
-        };
-        window.addEventListener('mousemove', handleWindowMouseMove);
-
-        return () => {
-            window.removeEventListener('mousemove', handleWindowMouseMove);
-        };
-    }, []);
-
-    const handleMouseClick = (event: any) => {
-        setCoords({
-            x: event.clientX - event.target.offsetLeft,
-            y: event.clientY - event.target.offsetTop,
-        });
-    };
-
-    function classNames(...classes: string[]) {
+      function classNames(...classes: string[]) {
         return classes.filter(Boolean).join(' ')
     }
 
@@ -289,75 +264,6 @@ function App() {
 
     const commands = [
         {
-            command: 'Set the context to *',
-            callback: (context: string) => setMMO({
-                ...mmo,
-                context: context
-            }),
-            isFuzzyMatch: true,
-            fuzzyMatchingThreshold: 0.2
-        },
-        {
-            command: 'Set the entity to *',
-            callback: (entity: string) => setMMO({
-                ...mmo,
-                entity: entity
-            }),
-            isFuzzyMatch: true,
-            fuzzyMatchingThreshold: 0.2
-        },
-        {
-            command: 'Set the location to *',
-            callback: (location: string) => setMMO({
-                ...mmo,
-                location: location
-            }),
-            isFuzzyMatch: true,
-            fuzzyMatchingThreshold: 0.2
-        },
-        {
-            command: 'Set the date to *',
-            callback: (date: string) => setMMO({
-                ...mmo,
-                date: date
-            }),
-            isFuzzyMatch: true,
-            fuzzyMatchingThreshold: 0.2
-        },
-        {
-            command: 'Set the object to *',
-            callback: (object: string) => setMMO({
-                ...mmo,
-                object: object
-            }),
-            isFuzzyMatch: true,
-            fuzzyMatchingThreshold: 0.2
-        },
-        {
-            command: 'Set the time to *',
-            callback: (time: string) => setMMO({
-                ...mmo,
-                time: time
-            }),
-            isFuzzyMatch: true,
-            fuzzyMatchingThreshold: 0.2
-        },
-        {
-            command: 'Set the event to *',
-            callback: (event: string) => setMMO({
-                ...mmo,
-                event: event
-            }),
-            isFuzzyMatch: true,
-            fuzzyMatchingThreshold: 0.2
-        },
-        {
-            command: 'I would like to order *',
-            callback: (food: string) => console.log("YOU HAVE ORDERED A FUCKING " + food),
-            isFuzzyMatch: true,
-            fuzzyMatchingThreshold: 0.2
-        },
-        {
             command: 'clear',
             callback: () => setMMO(new MMODTO("", "", undefined, "", "", "", "", "", "", [])),
             isFuzzyMatch: true,
@@ -365,17 +271,66 @@ function App() {
         }
     ]
 
+    const [currentVoiceField, setCurrentVoiceField] = useState<string>("");
+    const {listening, resetTranscript, transcript, browserSupportsSpeechRecognition } = useSpeechRecognition({ commands })
 
-    const { transcript, browserSupportsSpeechRecognition } = useSpeechRecognition({ commands })
-
-    if (browserSupportsSpeechRecognition) {
-        SpeechRecognition.startListening({ continuous: true })
+    if (!browserSupportsSpeechRecognition) {
+        toast.error("Your browser does not support speech recognition");
     }
 
+    useEffect(() => {
+        if(currentVoiceField == "") {
+            resetTranscript();
+            SpeechRecognition.stopListening();
+        }
+
+        if(currentVoiceField == "context")
+            setMMO({
+                ...mmo,
+                context: transcript
+            });
+
+        if(currentVoiceField == "entity")
+            setMMO({
+                ...mmo,
+                entity: transcript
+            });
+
+        if(currentVoiceField == "location")
+            setMMO({
+                ...mmo,
+                location: transcript
+            });
+
+        if(currentVoiceField == "date")
+            setMMO({
+                ...mmo,
+                date: transcript
+            });
+
+        if(currentVoiceField == "object")
+            setMMO({
+                ...mmo,
+                object: transcript
+            });
+
+        if(currentVoiceField == "time")
+            setMMO({
+                ...mmo,
+                time: transcript
+            });
+
+        if(currentVoiceField == "event")
+            setMMO({
+                ...mmo,
+                event: transcript
+            });
+    }, [transcript]);
+
     return (
-        <div className={`App w-screen h-screen flex flex-col bg-cover bg-gradient-to-r from-sky-400 to-blue-600 justify-between items-center`}>
+        <div className={`App w-full h-full flex flex-col bg-cover bg-gradient-to-r from-sky-400 to-blue-600 justify-between items-center`}>
             <Toaster/>
-            <div className={`w-full max-w-md px-2 py-16 sm:px-0`}>
+            <div className={`w-full h-screen max-w-md px-2 py-16 sm:px-0`}>
                 <Tab.Group onChange={() => {
                     setMMO(new MMODTO("", "", undefined, "", "", "", "", "", "", []));
                     setQueryData([]);
@@ -533,122 +488,241 @@ function App() {
                                                 <p className={"pl-2 font-gilroyLight text-red-500 text-sm"}>Required</p>
                                             </div>
 
-                                            <input
-                                                type="text"
-                                                className='border-solid border-2 border-gray-100 rounded-md h-9 w-80 mt-1 mb-5 pl-1'
-                                                required
-                                                value={mmo.context}
-                                                onChange={(e) => {
-                                                    setMMO({
-                                                        ...mmo,
-                                                        context: e.target.value
-                                                    });
-                                                }
-                                                }
-                                            />
+                                            <div className={"flex flex-row justify-between items-center w-4/6 mt-2 mb-4"}>
+                                                <input
+                                                    type="text"
+                                                    className='border-solid border-2 border-gray-100 rounded-md h-9 w-80 pl-1'
+                                                    required
+                                                    value={mmo.context}
+                                                    onChange={(e) => {
+                                                        setMMO({
+                                                            ...mmo,
+                                                            context: e.target.value
+                                                        });
+                                                    }
+                                                    }
+                                                />
+
+                                                <button className={`flex h-9 w-9 rounded-lg hover:scale-105 transition-all ease-in-out duration-300 items-center justify-center ${currentVoiceField == "context" ? 'bg-sky-400' : 'bg-black'}`} onClick={() => {
+                                                    if(listening && currentVoiceField == "context") {
+                                                        setCurrentVoiceField("");
+                                                        resetTranscript();
+                                                        return;
+                                                    } else if(listening) {
+                                                        resetTranscript();
+                                                    } else if(!listening)
+                                                        SpeechRecognition.startListening({continuous: true});
+
+                                                    setCurrentVoiceField("context")
+                                                }}>
+                                                    <i className="fa-solid fa-microphone text-sm text-white"></i>
+                                                </button>
+
+                                            </div>
 
                                             <div className={"flex flex-row items-center"}>
                                                 <p className="font-gilroy">Entity</p>
                                                 <p className={"pl-2 font-gilroyLight text-yellow-500 text-sm"}>Optional</p>
                                             </div>
-                                            <input
-                                                type="text"
-                                                className='border-solid border-2 border-gray-100 rounded-md h-9 w-80 mt-1 mb-5 pl-1'
-                                                required
-                                                value={mmo.entity}
-                                                onChange={(e) => {
-                                                    setMMO({
-                                                        ...mmo,
-                                                        entity: e.target.value
-                                                    });
-                                                }
-                                                }
-                                            />
+
+                                            <div className={"flex flex-row justify-between items-center w-4/6 mt-2 mb-4"}>
+                                                <input
+                                                    type="text"
+                                                    className='border-solid border-2 border-gray-100 rounded-md h-9 w-80 pl-1'
+                                                    required
+                                                    value={mmo.entity}
+                                                    onChange={(e) => {
+                                                        setMMO({
+                                                            ...mmo,
+                                                            entity: e.target.value
+                                                        });
+                                                    }
+                                                    }
+                                                />
+
+                                                <button className={`flex h-9 w-9 rounded-lg hover:scale-105 transition-all ease-in-out duration-300 items-center justify-center ${currentVoiceField == "entity" ? 'bg-sky-400' : 'bg-black'}`} onClick={() => {
+                                                    if(listening && currentVoiceField == "entity") {
+                                                        setCurrentVoiceField("");
+                                                        resetTranscript();
+                                                        return;
+                                                    } else if(listening) {
+                                                        resetTranscript();
+                                                    } else if(!listening)
+                                                        SpeechRecognition.startListening({continuous: true});
+
+                                                    setCurrentVoiceField("entity")
+                                                }}>
+                                                    <i className="fa-solid fa-microphone text-sm text-white"></i>
+                                                </button>
+                                            </div>
+
                                             <div className={"flex flex-row items-center"}>
                                                 <p className="font-gilroy">Location</p>
                                                 <p className={"pl-2 font-gilroyLight text-yellow-500 text-sm"}>Optional</p>
                                             </div>
-                                            <input
-                                                type="text"
-                                                className='border-solid border-2 border-gray-100 rounded-md h-9 w-80 mt-1 mb-5 pl-1'
-                                                required
-                                                value={mmo.location}
-                                                onChange={(e) => {
-                                                    setMMO({
-                                                        ...mmo,
-                                                        location: e.target.value
-                                                    });
-                                                }
-                                                }
-                                            />
+
+                                            <div className={"flex flex-row justify-between items-center w-4/6 mt-2 mb-4"}>
+                                                <input
+                                                    type="text"
+                                                    className='border-solid border-2 border-gray-100 rounded-md h-9 w-80 pl-1'
+                                                    required
+                                                    value={mmo.location}
+                                                    onChange={(e) => {
+                                                        setMMO({
+                                                            ...mmo,
+                                                            location: e.target.value
+                                                        });
+                                                    }
+                                                    }
+                                                />
+                                                <button className={`flex h-9 w-9 rounded-lg hover:scale-105 transition-all ease-in-out duration-300 items-center justify-center ${currentVoiceField == "location" ? 'bg-sky-400' : 'bg-black'}`} onClick={() => {
+                                                    if(listening && currentVoiceField == "location") {
+                                                        setCurrentVoiceField("");
+                                                        resetTranscript();
+                                                        return;
+                                                    } else if(listening) {
+                                                        resetTranscript();
+                                                    } else if(!listening)
+                                                        SpeechRecognition.startListening({continuous: true});
+
+                                                    setCurrentVoiceField("location")
+                                                }}>
+                                                    <i className="fa-solid fa-microphone text-sm text-white"></i>
+                                                </button>
+                                            </div>
                                             <div className={"flex flex-row items-center"}>
                                                 <p className="font-gilroy">Date</p>
                                                 <p className={"pl-2 font-gilroyLight text-yellow-500 text-sm"}>Optional</p>
                                             </div>
-                                            <input
-                                                type="text"
-                                                className='border-solid border-2 border-gray-100 rounded-md h-9 w-80 mt-1 mb-5 pl-1'
-                                                required
-                                                value={mmo.date}
-                                                onChange={(e) => {
-                                                    setMMO({
-                                                        ...mmo,
-                                                        date: e.target.value
-                                                    });
-                                                }
-                                                }
-                                            />
+                                            <div className={"flex flex-row justify-between items-center w-4/6 mt-2 mb-4"}>
+                                                <input
+                                                    type="text"
+                                                    className='border-solid border-2 border-gray-100 rounded-md h-9 w-80 pl-1'
+                                                    required
+                                                    value={mmo.date}
+                                                    onChange={(e) => {
+                                                        setMMO({
+                                                            ...mmo,
+                                                            date: e.target.value
+                                                        });
+                                                    }
+                                                    }
+                                                />
+                                                <button className={`flex h-9 w-9 rounded-lg hover:scale-105 transition-all ease-in-out duration-300 items-center justify-center ${currentVoiceField == "date" ? 'bg-sky-400' : 'bg-black'}`} onClick={() => {
+                                                    if(listening && currentVoiceField == "date") {
+                                                        setCurrentVoiceField("");
+                                                        resetTranscript();
+                                                        return;
+                                                    } else if(listening) {
+                                                        resetTranscript();
+                                                    } else if(!listening)
+                                                        SpeechRecognition.startListening({continuous: true});
+
+                                                    setCurrentVoiceField("date")
+                                                }}>
+                                                    <i className="fa-solid fa-microphone text-sm text-white"></i>
+                                                </button>
+
+                                            </div>
                                             <div className={"flex flex-row items-center"}>
                                                 <p className="font-gilroy">Object</p>
                                                 <p className={"pl-2 font-gilroyLight text-yellow-500 text-sm"}>Optional</p>
                                             </div>
-                                            <input
-                                                type="text"
-                                                className='border-solid border-2 border-gray-100 rounded-md h-9 w-80 mt-1 mb-5 pl-1'
-                                                required
-                                                value={mmo.object}
-                                                onChange={(e) => {
-                                                    setMMO({
-                                                        ...mmo,
-                                                        object: e.target.value
-                                                    });
-                                                }
-                                                }
-                                            />
+                                            <div className={"flex flex-row justify-between items-center w-4/6 mt-2 mb-4"}>
+                                                <input
+                                                    type="text"
+                                                    className='border-solid border-2 border-gray-100 rounded-md h-9 w-80 pl-1'
+                                                    required
+                                                    value={mmo.object}
+                                                    onChange={(e) => {
+                                                        setMMO({
+                                                            ...mmo,
+                                                            object: e.target.value
+                                                        });
+                                                    }
+                                                    }
+                                                />
+                                                <button className={`flex h-9 w-9 rounded-lg hover:scale-105 transition-all ease-in-out duration-300 items-center justify-center ${currentVoiceField == "object" ? 'bg-sky-400' : 'bg-black'}`} onClick={() => {
+                                                    if(listening && currentVoiceField == "object") {
+                                                        setCurrentVoiceField("");
+                                                        resetTranscript();
+                                                        return;
+                                                    } else if(listening) {
+                                                        resetTranscript();
+                                                    } else if(!listening)
+                                                        SpeechRecognition.startListening({continuous: true});
+
+                                                    setCurrentVoiceField("object")
+                                                }}>
+                                                    <i className="fa-solid fa-microphone text-sm text-white"></i>
+                                                </button>
+                                            </div>
                                             <div className={"flex flex-row items-center"}>
                                                 <p className="font-gilroy">Time</p>
                                                 <p className={"pl-2 font-gilroyLight text-yellow-500 text-sm"}>Optional</p>
                                             </div>
-                                            <input
-                                                type="text"
-                                                className='border-solid border-2 border-gray-100 rounded-md h-9 w-80 mt-1 mb-5 pl-1'
-                                                required
-                                                value={mmo.time}
-                                                onChange={(e) => {
-                                                    setMMO({
-                                                        ...mmo,
-                                                        time: e.target.value
-                                                    });
-                                                }
-                                                }
-                                            />
+                                            <div className={"flex flex-row justify-between items-center w-4/6 mt-2 mb-4"}>
+                                                <input
+                                                    type="text"
+                                                    className='border-solid border-2 border-gray-100 rounded-md h-9 w-80 pl-1'
+                                                    required
+                                                    value={mmo.time}
+                                                    onChange={(e) => {
+                                                        setMMO({
+                                                            ...mmo,
+                                                            time: e.target.value
+                                                        });
+                                                    }
+                                                    }
+                                                />
+                                                <button className={`flex h-9 w-9 rounded-lg hover:scale-105 transition-all ease-in-out duration-300 items-center justify-center ${currentVoiceField == "time" ? 'bg-sky-400' : 'bg-black'}`} onClick={() => {
+                                                    if(listening && currentVoiceField == "time") {
+                                                        setCurrentVoiceField("");
+                                                        resetTranscript();
+                                                        return;
+                                                    } else if(listening) {
+                                                        resetTranscript();
+                                                    } else if(!listening)
+                                                        SpeechRecognition.startListening({continuous: true});
+
+                                                    setCurrentVoiceField("time")
+                                                }}>
+                                                    <i className="fa-solid fa-microphone text-sm text-white"></i>
+                                                </button>
+                                            </div>
                                             <div className={"flex flex-row items-center"}>
                                                 <p className="font-gilroy">Event</p>
-                                                <p className={"pl-2 font-gilroyLight text-yellow-500 text-sm"}>Optional</p>
+                                                <p className={"pl-2 font-gilroyLight text-yellow-500 text-sm "}>Optional</p>
                                             </div>
-                                            <input
-                                                type="text"
-                                                className='border-solid border-2 border-gray-100 rounded-md h-9 w-80 mt-1 mb-5 pl-1'
-                                                required
-                                                value={mmo.event}
-                                                onChange={(e) => {
-                                                    setMMO({
-                                                        ...mmo,
-                                                        event: e.target.value
-                                                    });
-                                                }
-                                                }
-                                            />
+                                            <div className={"flex flex-row justify-between items-center w-4/6 mt-2 mb-4"}>
+                                                <input
+                                                    type="text"
+                                                    className='border-solid border-2 border-gray-100 rounded-md h-9 w-80 pl-1'
+                                                    required
+                                                    value={mmo.event}
+                                                    onChange={(e) => {
+                                                        setMMO({
+                                                            ...mmo,
+                                                            event: e.target.value
+                                                        });
+                                                    }
+                                                    }
+                                                />
+                                                <button className={`flex h-9 w-9 rounded-lg hover:scale-105 transition-all ease-in-out duration-300 items-center justify-center ${currentVoiceField == "event" ? 'bg-sky-400' : 'bg-black'}`} onClick={() => {
+                                                    if(listening && currentVoiceField == "event") {
+                                                        setCurrentVoiceField("");
+                                                        resetTranscript();
+                                                        return;
+                                                    } else if(listening) {
+                                                        resetTranscript();
+                                                    } else if(!listening)
+                                                        SpeechRecognition.startListening({continuous: true});
+
+                                                    setCurrentVoiceField("event")
+                                                }}>
+                                                    <i className="fa-solid fa-microphone text-sm text-white"></i>
+                                                </button>
+                                            </div>
                                             <div className={"flex flex-row items-center"}>
                                                 <p className="font-gilroy">Relationships</p>
                                                 <p className={"pl-2 font-gilroyLight text-yellow-500 text-sm"}>Optional</p>
