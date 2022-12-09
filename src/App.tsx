@@ -330,7 +330,7 @@ function App() {
     return (
         <div className={`App w-full h-full flex flex-col bg-cover bg-gradient-to-r from-sky-400 to-blue-600 justify-between items-center`}>
             <Toaster/>
-            <div className={`w-full h-screen max-w-md px-2 py-16 sm:px-0`}>
+            <div className={`w-full h-full max-w-md px-2 py-16 sm:px-0`}>
                 <Tab.Group onChange={() => {
                     setMMO(new MMODTO("", "", undefined, "", "", "", "", "", "", []));
                     setQueryData([]);
