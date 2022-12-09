@@ -1732,6 +1732,11 @@ function App() {
                 </Transition>
             </div>
 
+            {queryData.length == 0 &&
+                <div className={"flex grow flex-wrap w-full h-full items-center gap-24 px-10 py-10 h-96 w-full"}>
+                </div>
+            }
+
             <div className={"flex grow flex-wrap w-full h-full items-center gap-24 px-10 py-10"}>
                 {queryData.length != 0 &&
                     queryData.map((mmoQuery: MMOQueryDTO) => (
